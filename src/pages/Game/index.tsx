@@ -236,7 +236,7 @@ function Game() {
       {matched.length === arrayCards.length / 2 && (
         <div className="congrats-message">
           <h2>Поздравляем! Вы выиграли!</h2>
-          <p>Время: {gameTime} секунд</p>
+          <p className={style.time}>Время: {gameTime} секунд</p>
         </div>
       )}
 

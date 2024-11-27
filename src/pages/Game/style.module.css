@@ -47,3 +47,7 @@ font-weight: bold;
     margin: 20px;
     height: 30px;
 }
+
+.time{
+    color: rgb(14, 21, 114) !important;
+}
