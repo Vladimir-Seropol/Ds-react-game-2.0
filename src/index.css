@@ -1,0 +1,158 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  body {
+    border-color: antiquewhite;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgb(1, 46, 1);
+  }
+  
+  .container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+  }
+
+  .counters{
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-bottom: 40px;
+  }
+  
+  .moves {
+    font-size: 20px;
+    font-weight: bold;
+    color: white;
+
+  }
+
+  .timer{
+    color: white;
+  }
+  
+  .cards {
+    display: grid;
+    grid-template: repeat(3, 1fr) / repeat(4, 1fr);
+    gap: 10px;
+  }
+  
+  .card {
+    height: 150px;
+    width: 110px;
+    cursor: pointer;
+  }
+  
+  .card.playing .inner {
+    transform: rotateY(180deg);
+  }
+  
+  .inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    transition: all 0.6s cubic-bezier(0.38, 0.02, 0.09, 0.76);
+  
+  }
+  
+  .card .front,
+  .card .back {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    backface-visibility: hidden;
+  }
+  .front img{
+    border-radius: 20px;
+  }
+  .back img{
+    border-radius: 20px;
+    box-shadow: 2px 2px 5px rgb(129, 238, 153);
+  }
+
+  .non-matched-card .back img{
+    box-shadow: 2px 2px 5px rgb(238, 129, 129);
+  }
+  
+  
+  .card .front {
+    transform: rotateY(180deg);
+  }
+  
+  .card .back {
+    transition: all 0.3s ease;
+  }
+  
+  .card .back:hover {
+    transform: scale(1.1);
+  }
+
+  
+  .button-restart {
+    margin: 0 auto;
+    cursor: pointer;
+    margin-top: 20px;
+    font-weight: bold;
+    font-size: 30px;
+    padding: 10px;
+    border-radius: 15px;
+    border: none;
+    background-color: blanchedalmond;
+    box-shadow: 1px 2px 2px gray;
+    transition: all 0.3s ease;
+  }
+  .button-restart:hover {
+    background-color: rgb(235, 181, 101);
+    
+  }
+  
+  .button-restart:active {
+    box-shadow: none;
+   
+  }
+  
+.congrats-message {
+    position: absolute;
+    left: 0;
+    right: 0;
+    /* top: 130px;
+    bottom: 0; */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    font-size: 24px;
+    color: rgb(34, 0, 128);
+    /* height: 500px; */
+    background-color: rgba(255, 255, 255, 0.1); /* Полупрозрачный белый фон */
+    backdrop-filter: blur(5px); /* Эффект размытия фона */
+    border-radius: 10px; /* Закругленные углы для лучшего визуального эффекта */
+    padding: 20px; /* Внутренние отступы для текста */
+}
+
+ 
+    .congrats-message h2 {
+      font-size: 36px;
+      margin-bottom: 10px;
+    }
+    
+  

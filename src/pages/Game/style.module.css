@@ -1,0 +1,49 @@
+.settings_dlock{
+display: flex;
+flex-direction: column;
+align-items: flex-end;
+position: absolute; 
+z-index: 3;
+top: 0;
+right: 0;
+width: 100%;
+height: auto;
+
+
+}
+
+.modal_overlay{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(5px);
+margin: 25%;
+padding: 10px;
+border-radius: 10%;
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-position: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease;
+}
+.modal_overlay.show {
+    opacity: 1; 
+    visibility: visible;
+}
+
+.congrats_content{
+
+height: 100%; 
+margin:  0 auto;
+color: rgb(128, 0, 17);
+font-size: larger;
+font-weight: bold;
+}
+
+.congrats_content select{
+    display: inline-block;
+    margin: 20px;
+    height: 30px;
+}
