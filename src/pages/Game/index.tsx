@@ -81,10 +81,31 @@ function Game() {
   }, [numRows, numCols]);
 
   useEffect(() => {
-    if (matched.length === arrayCards.length / 2) {  
+    // Проверяем, что все карты совпали и игра завершена
+    if (matched.length === arrayCards.length / 2 && arrayCards.length > 0) {
       setIsGameActive(false);
-      const newStats = { moves, gameTime, numRows, numCols };
-      setStats(newStats); 
+  
+      // Проверяем, что moves и gameTime больше нуля
+      if (moves > 0 && gameTime > 0) {
+        const newStats = { moves, gameTime, numRows, numCols };
+        setStats(newStats);
+  
+        // Сохраняем статистику в localStorage
+        const today = new Date();
+        const formattedDate = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
+        const storedSessionHistory = JSON.parse(localStorage.getItem('sessionHistory') || '[]');
+        const newSession = { ...newStats, date: formattedDate };
+  
+        // Проверяем, что такая запись уже не существует
+        const isDuplicate = storedSessionHistory.some((session: { date: string; moves: number; gameTime: number; }) =>
+          session.date === newSession.date && session.moves === newSession.moves && session.gameTime === newSession.gameTime
+        );
+  
+        if (!isDuplicate) {
+          const updatedSessionHistory = [...storedSessionHistory, newSession];
+          localStorage.setItem('sessionHistory', JSON.stringify(updatedSessionHistory));
+        }
+      }
     }
   }, [matched, arrayCards, moves, gameTime, setStats, numRows, numCols]);
 

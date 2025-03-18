@@ -1,12 +1,10 @@
 import { useEffect, useState, useMemo, ReactNode } from 'react';
-import { useGameContext } from '../../components/GameContext';
 import { useNavigate } from 'react-router-dom';
 import RestartButton from '../../components/Button';
 import style from './style.module.css';
 
 const History = () => {
-  const { stats } = useGameContext();
-  const [currentDate, setCurrentDate] = useState<string>('');
+  const [, setCurrentDate] = useState<string>('');
   const [sessionHistory, setSessionHistory] = useState<Array<{
     numCols: ReactNode;
     numRows: ReactNode;
@@ -35,24 +33,6 @@ const History = () => {
     }
   }, []);
 
-  useEffect(() => {
-    if (stats && currentDate) {
-      if (stats.gameTime > 0 && stats.moves > 0) {
-        const storedSessionHistory = JSON.parse(localStorage.getItem('sessionHistory') || '[]');
-        const newSession = { ...stats, date: currentDate };
-
-        const isDuplicate = storedSessionHistory.some((session: { date: string; moves: number; gameTime: number; }) =>
-          session.date === newSession.date && session.moves === newSession.moves && session.gameTime === newSession.gameTime
-        );
-
-        if (!isDuplicate) {
-          const updatedSessionHistory = [...storedSessionHistory, newSession];
-          localStorage.setItem('sessionHistory', JSON.stringify(updatedSessionHistory));
-          setSessionHistory(updatedSessionHistory);
-        }
-      }
-    }
-  }, [stats, currentDate]);
 
   const handleSort = (key: 'date' | 'moves' | 'gameTime') => {
     let direction: 'ascending' | 'descending' = 'ascending';
