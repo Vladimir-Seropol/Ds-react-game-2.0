@@ -10,11 +10,10 @@ interface CardsGridProps {
   flipCard: (index: number) => void;
   numRows: number; 
   numCols: number;
-  nonMatchedCards: number[]; // Добавляем пропс nonMatchedCards
 }
 
-const CardsGrid: React.FC<CardsGridProps> = ({ arrayCards, openedCards, matched, flipCard, numRows, numCols, nonMatchedCards }) => {
-  // Вычисляем стиль для сетки (CSS Grid)
+const CardsGrid: React.FC<CardsGridProps> = ({ arrayCards, openedCards, matched, flipCard, numRows, numCols }) => {
+ 
   const gridStyle = {
     gridTemplateColumns: `repeat(${numCols}, 1fr)`, 
     gridTemplateRows: `repeat(${numRows}, auto)`, 
@@ -32,7 +31,6 @@ const CardsGrid: React.FC<CardsGridProps> = ({ arrayCards, openedCards, matched,
             onClick={() => flipCard(index)}
             isPlaying={isPlaying}
             iconPlaying={iconPlaying}
-            isNonMatched={nonMatchedCards.includes(index)} // Используем nonMatchedCards
           />
         );
       })}

@@ -1,5 +1,3 @@
-// src/router.tsx
-
 import { createBrowserRouter } from "react-router-dom";
 import Game from "./pages/Game";
 import History from "./pages/History";

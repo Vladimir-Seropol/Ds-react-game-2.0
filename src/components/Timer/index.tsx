@@ -2,45 +2,54 @@ import { useEffect, useState, useRef } from "react";
 
 interface TimerProps {
   isActive: boolean;
-  areAllCardsOpened: boolean;
   updateGameTime: (time: number) => void;
-  resetTimeFlag: boolean;  
+  resetTimeFlag: boolean;
 }
 
-const Timer: React.FC<TimerProps> = ({ isActive, areAllCardsOpened, updateGameTime, resetTimeFlag }) => {
-  const [time, setTime] = useState(0); 
-  const intervalRef = useRef<NodeJS.Timeout | null>(null); 
+const Timer: React.FC<TimerProps> = ({
+  isActive,
+  updateGameTime,
+  resetTimeFlag,
+}) => {
+  const [time, setTime] = useState(0);
 
-  // Сброс времени при изменении флага
+
+  const intervalRef = useRef<number | null>(null);
+
+
   useEffect(() => {
     if (resetTimeFlag) {
-      setTime(0);  
+      setTime(0);
     }
-  }, [resetTimeFlag]); 
+  }, [resetTimeFlag]);
+
 
   useEffect(() => {
-    if (isActive && !areAllCardsOpened) {
-      intervalRef.current = setInterval(() => {
-        setTime((prevTime) => prevTime + 1); 
+    if (isActive) {
+      intervalRef.current = window.setInterval(() => {
+        setTime((prev) => prev + 1);
       }, 1000);
     } else {
-      if (intervalRef.current) {
+      if (intervalRef.current !== null) {
         clearInterval(intervalRef.current);
+        intervalRef.current = null;
       }
     }
 
     return () => {
-      if (intervalRef.current) {
+      if (intervalRef.current !== null) {
         clearInterval(intervalRef.current);
+        intervalRef.current = null;
       }
     };
-  }, [isActive, areAllCardsOpened]);
+  }, [isActive]);
+
 
   useEffect(() => {
-    updateGameTime(time);  
+    updateGameTime(time);
   }, [time, updateGameTime]);
 
-  return <span className="timer">Время: {time} секунд.</span>;
+  return <span className="timer">Время: {time} секунд</span>;
 };
 
 export default Timer;

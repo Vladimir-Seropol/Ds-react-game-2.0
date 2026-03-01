@@ -42,7 +42,6 @@ const History = () => {
     setSortConfig({ key, direction });
   };
 
-  // Использование useMemo для сортировки sessionHistory
   const sortedSessionHistory = useMemo(() => {
     return [...sessionHistory].sort((a, b) => {
       if (sortConfig.key === 'date') {
@@ -71,16 +70,16 @@ const History = () => {
     '4x6': [],
   };
   
-  // Группировка по размеру поля
+
   sortedSessionHistory.forEach(session => {
     const fieldSize = `${session.numRows}x${session.numCols}` as keyof typeof sessionByFieldSize;
   
-    // Убедимся, что для поля есть массив
+
     if (!sessionByFieldSize[fieldSize]) {
       sessionByFieldSize[fieldSize] = [];
     }
   
-    // Добавляем сессию в соответствующий массив
+
     sessionByFieldSize[fieldSize].push(session);
   });
 
@@ -105,7 +104,7 @@ const History = () => {
     return '';
   };
 
-  // Слайдер - состояние текущего слайда
+
   const [currentSlide, setCurrentSlide] = useState(0);
 
   const totalSlides = Object.keys(sessionByFieldSize).length;
@@ -123,7 +122,6 @@ const History = () => {
       <RestartButton text="Вернуться в игру" onClick={() => navigate('/')} style={{ fontWeight: 'lighter', fontSize: '20px' }} />
       <h1>Статистика</h1>
       <div className={style.game_stats}>
-        {/* Слайдер */}
         <div className={style.sliderContainer}>
         <RestartButton text="←" onClick={prevSlide} style={{position: 'absolute', top: '10px', left: '0px', transform: 'translateY(-50%)', zIndex: '1' }} />
           

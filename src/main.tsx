@@ -1,17 +1,17 @@
 import  { StrictMode } from 'react';
-import ReactDOM from 'react-dom/client'; // Используем createRoot для React 18
-import './index.css'; // Импортируем стили
-import { GameProvider } from './components/GameContext'; // Импортируем провайдер контекста
-import { RouterProvider } from 'react-router-dom'; // Импортируем компоненты для маршрутизации
-import router from './router'; // Импортируем настроенный роутер
+import ReactDOM from 'react-dom/client'; 
+import './index.css'; 
+import { GameProvider } from './components/GameContext'; 
+import { RouterProvider } from 'react-router-dom'; 
+import router from './router'; 
 
-// Создаём корневой элемент и рендерим приложение
+
 const root = ReactDOM.createRoot(document.getElementById('root')!);
 
 root.render(
   <StrictMode>
     <GameProvider>
-      <RouterProvider router={router} /> {/* Добавляем RouterProvider */}
+      <RouterProvider router={router} /> 
     </GameProvider>
   </StrictMode>
 );

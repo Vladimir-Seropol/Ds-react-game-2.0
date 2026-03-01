@@ -5,13 +5,17 @@ interface CardProps {
   onClick: () => void;
   isPlaying: boolean;
   iconPlaying: string;
-  isNonMatched: boolean; // Новый проп
 }
 
-const Card: React.FC<CardProps> = ({ img, onClick, isPlaying, iconPlaying, isNonMatched }) => {
+const Card: React.FC<CardProps> = ({
+  img,
+  onClick,
+  isPlaying,
+  iconPlaying,
+}) => {
   return (
     <div
-      className={`card ${isPlaying ? "playing" : ""} ${isNonMatched ? "non-matched-card" : ""}`} // Добавляем класс для не совпавших карт
+      className={`card ${isPlaying ? "playing" : ""}`}
       onClick={onClick}
     >
       <div className="inner">

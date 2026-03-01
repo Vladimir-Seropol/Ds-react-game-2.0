@@ -1,16 +1,16 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import '../../index.css';
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import "../../index.css";
 import CardsGrid from "../../components/CardsGrid";
 import Moves from "../../components/Moves";
 import RestartButton from "../../components/Button";
 import Timer from "../../components/Timer";
 import { useGameContext } from "../../components/GameContext";
-import style  from './style.module.css';
+import style from "./style.module.css";
 
-// Генерация массива карт для игры (по 2 одинаковые карты для каждой пары)
-const icons = Array.from({ length: 26 }, (_, index) => 
-  `/images/${(index + 1).toString().padStart(2, '0')}.jpg`
+const icons = Array.from(
+  { length: 26 },
+  (_, index) => `/images/${(index + 1).toString().padStart(2, "0")}.jpg`
 );
 
 export interface CardType {
@@ -18,26 +18,27 @@ export interface CardType {
   img: string;
 }
 
-function Game() {
-  const [arrayCards, setArrayCards] = useState<CardType[]>([]); 
-  const [openedCards, setOpenedCards] = useState<number[]>([]); 
-  const [matched, setMatched] = useState<number[]>([]); 
-  const [moves, setMoves] = useState(0); 
-  const [isGameActive, setIsGameActive] = useState(false); 
-  const [hasStarted, setHasStarted] = useState(false); 
-  const [gameTime, setGameTime] = useState(0); 
-  const [nonMatchedCards, setNonMatchedCards] = useState<number[]>([]); // Состояние не совпавших карт
-  const [cardOpenCounts, setCardOpenCounts] = useState<{ [key: number]: number }>({});
+type GameStatus = "idle" | "playing" | "checking" | "finished";
 
-  const [numRows, setNumRows] = useState(2); 
-  const [numCols, setNumCols] = useState(3); 
-  const [isModalOpen, setIsModalOpen] = useState(false); 
+function Game() {
+  const [arrayCards, setArrayCards] = useState<CardType[]>([]);
+  const [openedCards, setOpenedCards] = useState<number[]>([]);
+  const [matched, setMatched] = useState<number[]>([]);
+  const [moves, setMoves] = useState(0);
+  const [gameStatus, setGameStatus] = useState<GameStatus>("idle");
+  const [gameTime, setGameTime] = useState(0);
+
+  const [numRows, setNumRows] = useState(2);
+  const [numCols, setNumCols] = useState(3);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [resetTimeFlag, setResetTimeFlag] = useState(false);
+
   const { setStats } = useGameContext();
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
+
 
   const generateCardPairs = (numPairs: number) => {
-    const cards = [];
+    const cards: CardType[] = [];
     for (let i = 0; i < numPairs; i++) {
       cards.push({ id: i + 1, img: icons[i % icons.length] });
       cards.push({ id: i + 1, img: icons[i % icons.length] });
@@ -46,33 +47,21 @@ function Game() {
   };
 
   const shuffleCards = (array: CardType[]): CardType[] => {
-    let shuffleIndex = array.length;
-    let randomIndex: number;
-    let tempValue: CardType;
-
-    while (shuffleIndex !== 0) {
-      randomIndex = Math.floor(Math.random() * shuffleIndex);
-      shuffleIndex -= 1;
-      tempValue = array[shuffleIndex];
-      array[shuffleIndex] = array[randomIndex];
-      array[randomIndex] = tempValue;
-    }
-    return array;
+    return [...array].sort(() => Math.random() - 0.5);
   };
+
 
   const resetGame = () => {
     const totalCards = numRows * numCols;
-    const numPairs = totalCards / 2; 
-    const availableCards = generateCardPairs(numPairs); 
-    setArrayCards(shuffleCards(availableCards)); 
-    setOpenedCards([]); 
-    setMatched([]); 
-    setNonMatchedCards([]);
-    setCardOpenCounts({});
-    setMoves(0); 
-    setIsGameActive(false); 
-    setHasStarted(false); 
-    setGameTime(0); 
+    const numPairs = totalCards / 2;
+    const cards = shuffleCards(generateCardPairs(numPairs));
+
+    setArrayCards(cards);
+    setOpenedCards([]);
+    setMatched([]);
+    setMoves(0);
+    setGameStatus("idle");
+    setGameTime(0);
     setResetTimeFlag(true);
   };
 
@@ -81,167 +70,178 @@ function Game() {
   }, [numRows, numCols]);
 
   useEffect(() => {
-    // Проверяем, что все карты совпали и игра завершена
-    if (matched.length === arrayCards.length / 2 && arrayCards.length > 0) {
-      setIsGameActive(false);
-  
-      // Проверяем, что moves и gameTime больше нуля
-      if (moves > 0 && gameTime > 0) {
-        const newStats = { moves, gameTime, numRows, numCols };
-        setStats(newStats);
-  
-        // Сохраняем статистику в localStorage
-        const today = new Date();
-        const formattedDate = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
-        const storedSessionHistory = JSON.parse(localStorage.getItem('sessionHistory') || '[]');
-        const newSession = { ...newStats, date: formattedDate };
-  
-        // Проверяем, что такая запись уже не существует
-        const isDuplicate = storedSessionHistory.some((session: { date: string; moves: number; gameTime: number; }) =>
-          session.date === newSession.date && session.moves === newSession.moves && session.gameTime === newSession.gameTime
-        );
-  
-        if (!isDuplicate) {
-          const updatedSessionHistory = [...storedSessionHistory, newSession];
-          localStorage.setItem('sessionHistory', JSON.stringify(updatedSessionHistory));
-        }
-      }
-    }
-  }, [matched, arrayCards, moves, gameTime, setStats, numRows, numCols]);
-
-  useEffect(() => {
     if (resetTimeFlag) {
-      setResetTimeFlag(false);  
+      setResetTimeFlag(false);
     }
   }, [resetTimeFlag]);
 
-  const flipCard = (index: number): void => {
-    if (openedCards.includes(index) || matched.includes(arrayCards[index].id)) {
+
+  const flipCard = (index: number) => {
+    if (
+      gameStatus === "checking" ||
+      gameStatus === "finished" ||
+      openedCards.includes(index) ||
+      matched.includes(arrayCards[index].id)
+    ) {
       return;
     }
-  
-    // Увеличиваем счетчик открытий карты
-    setCardOpenCounts((prevCounts) => {
-      const newCounts = { ...prevCounts };
-      newCounts[index] = (newCounts[index] || 0) + 1;
-      return newCounts;
-    });
-  
-    if (!hasStarted) {
-      setHasStarted(true);
-      setIsGameActive(true);
+
+    if (gameStatus === "idle") {
+      setGameStatus("playing");
     }
-  
-    setOpenedCards((opened) => [...opened, index]);
-    setMoves((prevMove) => prevMove + 1);
+
+    setOpenedCards((prev) => [...prev, index]);
+    setMoves((prev) => prev + 1);
   };
-  
+
 
   useEffect(() => {
-    if (openedCards.length < 2) return;
+    if (openedCards.length !== 2) return;
 
-  const [firstIndex, secondIndex] = openedCards;
-  const firstMatched = arrayCards[firstIndex];
-  const secondMatched = arrayCards[secondIndex];
+    setGameStatus("checking");
 
-  if (firstMatched.id === secondMatched.id) {
-    setMatched((prevMatched) => [...prevMatched, firstMatched.id]);
-  } else {
-    // Если карты не совпали, проверяем, сколько раз они были открыты
-    if (cardOpenCounts[firstIndex] >= 2) {
-      setNonMatchedCards((prev) => [...prev, firstIndex]);
-    }
-    if (cardOpenCounts[secondIndex] >= 2) {
-      setNonMatchedCards((prev) => [...prev, secondIndex]);
-    }
-  }
-  
+    const [firstIndex, secondIndex] = openedCards;
+    const firstCard = arrayCards[firstIndex];
+    const secondCard = arrayCards[secondIndex];
+
+    const isMatch = firstCard.id === secondCard.id;
+
     setTimeout(() => {
-      setOpenedCards([]);  // Закрываем карты после 1 секунды
+      if (isMatch) {
+        setMatched((prev) => {
+          const updated = [...prev, firstCard.id];
+
+          if (updated.length === arrayCards.length / 2) {
+            setGameStatus("finished");
+          } else {
+            setGameStatus("playing");
+          }
+
+          return updated;
+        });
+      } else {
+        setGameStatus("playing");
+      }
+
+      setOpenedCards([]);
     }, 1000);
   }, [openedCards, arrayCards]);
 
-  const areAllCardsOpened = matched.length === arrayCards.length / 2;
+
+  useEffect(() => {
+    if (gameStatus !== "finished") return;
+
+    const newStats = { moves, gameTime, numRows, numCols };
+    setStats(newStats);
+
+    const today = new Date();
+    const formattedDate = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
+
+    const storedSessionHistory = JSON.parse(
+      localStorage.getItem("sessionHistory") || "[]"
+    );
+
+    const newSession = { ...newStats, date: formattedDate };
+
+    const isDuplicate = storedSessionHistory.some(
+      (session: { date: string; moves: number; gameTime: number }) =>
+        session.date === newSession.date &&
+        session.moves === newSession.moves &&
+        session.gameTime === newSession.gameTime
+    );
+
+    if (!isDuplicate) {
+      localStorage.setItem(
+        "sessionHistory",
+        JSON.stringify([...storedSessionHistory, newSession])
+      );
+    }
+  }, [gameStatus]);
+
 
   const updateGameTime = (time: number) => {
     setGameTime(time);
   };
 
-  const handleFieldSizeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleFieldSizeChange = (
+    event: React.ChangeEvent<HTMLSelectElement>
+  ) => {
     const value = event.target.value;
-    switch (value) {
-      case '2x3':
-        setNumRows(2);
-        setNumCols(3);
-        break;
-      case '3x4':
-        setNumRows(3);
-        setNumCols(4);
-        break;
-      case '4x4':
-        setNumRows(4);
-        setNumCols(4);
-        break;
-      case '4x5':
-        setNumRows(4);
-        setNumCols(5);
-        break;
-      case '4x6':
-        setNumRows(4);
-        setNumCols(6);
-        break;
-      default:
-        break;
+
+    const sizes: Record<string, [number, number]> = {
+      "2x3": [2, 3],
+      "3x4": [3, 4],
+      "4x4": [4, 4],
+      "4x5": [4, 5],
+      "4x6": [4, 6],
+    };
+
+    const selected = sizes[value];
+    if (selected) {
+      setNumRows(selected[0]);
+      setNumCols(selected[1]);
     }
-    closeModal(); 
+
+    closeModal();
   };
 
-  const openModal = () => {
-    setIsModalOpen(true);
-  };
+  const openModal = () => setIsModalOpen(true);
 
   const closeModal = () => {
     const modalOverlay: any = document.querySelector(`.${style.modal_overlay}`);
-    modalOverlay.classList.remove(style.show);
-    
+    modalOverlay?.classList.remove(style.show);
+
     setTimeout(() => {
-        setIsModalOpen(false);
-    }, 300); 
-};
+      setIsModalOpen(false);
+    }, 300);
+  };
+
 
   return (
     <div className="container">
-       <div className={style.settings_dlock}>
-    <div className={style.settings_icon}>
-        
-        <RestartButton text="⚙️" onClick={openModal} style={{margin: "0", position: "absolute", top: "0", right: "0"}}/>
-    </div>
-
-    {isModalOpen && (
-        <div className={`${style.modal_overlay} ${isModalOpen ? style.show : ''}`} onClick={closeModal}>
-            <div className={style.congrats_content} onClick={(e) => e.stopPropagation()}>
-                <h2>Выберите размер поля:</h2>
-                <select onChange={handleFieldSizeChange}>
-                    <option value="2x3">2x3</option>
-                    <option value="3x4">3x4</option>
-                    <option value="4x4">4x4</option>
-                    <option value="4x5">4x5</option>
-                    <option value="4x6">4x6</option>
-                </select>
-                <RestartButton text="Закрыть" onClick={closeModal} style={{fontSize: "12px"}}/>
-            </div>
+      <div className={style.settings_dlock}>
+        <div className={style.settings_icon}>
+          <RestartButton
+            text="⚙️"
+            onClick={openModal}
+            style={{ margin: 0, position: "absolute", top: 0, right: 0 }}
+          />
         </div>
-    )}
-</div>
+
+        {isModalOpen && (
+          <div
+            className={`${style.modal_overlay} ${isModalOpen ? style.show : ""}`}
+            onClick={closeModal}
+          >
+            <div
+              className={style.congrats_content}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h2>Выберите размер поля:</h2>
+              <select onChange={handleFieldSizeChange}>
+                <option value="2x3">2x3</option>
+                <option value="3x4">3x4</option>
+                <option value="4x4">4x4</option>
+                <option value="4x5">4x5</option>
+                <option value="4x6">4x6</option>
+              </select>
+              <RestartButton
+                text="Закрыть"
+                onClick={closeModal}
+                style={{ fontSize: "12px" }}
+              />
+            </div>
+          </div>
+        )}
+      </div>
 
       <div className="counters">
         <Moves moves={moves} />
         <Timer
-          isActive={isGameActive && hasStarted}
-          areAllCardsOpened={areAllCardsOpened}
+          isActive={gameStatus === "playing"}
           updateGameTime={updateGameTime}
-          resetTimeFlag={resetTimeFlag}  
-        />     
+          resetTimeFlag={resetTimeFlag}
+        />
       </div>
 
       <CardsGrid
@@ -250,11 +250,10 @@ function Game() {
         matched={matched}
         flipCard={flipCard}
         numRows={numRows}
-        numCols={numCols} 
-        nonMatchedCards={nonMatchedCards} 
+        numCols={numCols}
       />
 
-      {matched.length === arrayCards.length / 2 && (
+      {gameStatus === "finished" && (
         <div className="congrats-message">
           <h2>Поздравляем! Вы выиграли!</h2>
           <p className={style.time}>Время: {gameTime} секунд</p>
@@ -262,7 +261,10 @@ function Game() {
       )}
 
       <RestartButton text="Начать снова" onClick={resetGame} />
-      <RestartButton text="Перейти к статистике" onClick={() => navigate('/history')} />
+      <RestartButton
+        text="Перейти к статистике"
+        onClick={() => navigate("/history")}
+      />
     </div>
   );
 }

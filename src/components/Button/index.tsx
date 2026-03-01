@@ -1,4 +1,3 @@
-// RestartButton.tsx
 import React from "react";
 
 interface RestartButtonProps {

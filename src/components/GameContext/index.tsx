@@ -12,7 +12,6 @@ interface GameContextType {
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
 
-// Тип для пропсов компонента GameProvider
 interface GameProviderProps {
   children: ReactNode; 
 }
